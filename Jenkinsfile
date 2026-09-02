@@ -99,16 +99,38 @@ pipeline {
                     }
             }
         }
+stage('Push image to Hub') {
+    steps {
+        script {
+            withCredentials([
+                usernamePassword(
+                    credentialsId: 'dockerhub-pwd',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )
+            ]) {
+                sh '''
+                    echo "$DOCKER_PASSWORD" | docker login \
+                    -u "$DOCKER_USERNAME" \
+                    --password-stdin
 
-        stage('Push image to Hub'){
-            steps{
-                script{
-                   withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
-                   sh 'docker login -u patilAshu -p ${dockerhubpwd}'}
-                   sh 'docker push youngminds73/ekart:latest'
-                }
+                    docker push youngminds73/ekart:latest
+
+                    docker logout
+                '''
             }
         }
+    }
+}
+//        stage('Push image to Hub'){
+//            steps{
+//                script{
+//                   withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
+//                   sh 'docker login -u patilAshu -p ${dockerhubpwd}'}
+//                   sh 'docker push youngminds73/ekart:latest'
+//                }
+//            }
+//        }
         stage('EKS and Kubectl configuration'){
             steps{
                 script{
