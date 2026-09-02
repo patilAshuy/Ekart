@@ -64,12 +64,35 @@ pipeline {
 //            }
 //        }
 
-        stage('deploy to Nexus') {
-            steps {
-                 sh 'mvn deploy -DskipTests=true'
-                  }
+ //       stage('deploy to Nexus') {
+ //           steps {
+ //                sh 'mvn deploy -DskipTests=true'
+ //                 }
+ //       }
+        stage('Deploy to Nexus') {
+           steps {
+              withCredentials([
+                  usernamePassword(
+                     credentialsId: 'nexus-credentials',
+                     usernameVariable: 'NEXUS_USERNAME',
+                     passwordVariable: 'NEXUS_PASSWORD'
+                  )
+               ]) {
+            configFileProvider([
+                configFile(
+                    fileId: 'maven-settings',
+                    variable: 'MAVEN_SETTINGS'
+                )
+            ]) {
+                sh '''
+                    mvn deploy \
+                    -DskipTests=true \
+                    -s "$MAVEN_SETTINGS"
+                '''
+            }
         }
-        
+    }
+}
 
         stage('build and Tag docker image') {
             steps {
