@@ -92,14 +92,7 @@ pipeline {
         }
     }
 }
-        stage('build and Tag docker image') {
-            steps {
-                script {
-                        sh "docker build -t youngminds73/ekart:latest -f docker/Dockerfile ."
-                    }
-            }
-        }
-stage('Push image to Hub') {
+     stage('Build and Tag Docker Image') {
     steps {
         script {
             withCredentials([
@@ -110,12 +103,26 @@ stage('Push image to Hub') {
                 )
             ]) {
                 sh '''
-                    echo "$DOCKER_PASSWORD" | docker login \
-                    -u "$DOCKER_USERNAME" \
-                    --password-stdin
+                    docker build -t $DOCKER_USERNAME/ekart:latest -f docker/Dockerfile .
+                '''
+            }
+        }
+    }
+}
 
-                    docker push youngminds73/ekart:latest
-
+stage('Push Image to Hub') {
+    steps {
+        script {
+            withCredentials([
+                usernamePassword(
+                    credentialsId: 'dockerhub-pwd',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )
+            ]) {
+                sh '''
+                    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                    docker push $DOCKER_USERNAME/ekart:latest
                     docker logout
                 '''
             }
