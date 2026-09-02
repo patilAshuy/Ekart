@@ -69,31 +69,29 @@ pipeline {
  //                sh 'mvn deploy -DskipTests=true'
  //                 }
  //       }
-        stage('Deploy to Nexus') {
-           steps {
-              withCredentials([
-                  usernamePassword(
-                     credentialsId: 'nexus-credentials',
-                     usernameVariable: 'NEXUS_USERNAME',
-                     passwordVariable: 'NEXUS_PASSWORD'
-                  )
-               ]) {
+ stage('Deploy to Nexus') {
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'nexus-credentials',
+                usernameVariable: 'NEXUS_USERNAME',
+                passwordVariable: 'NEXUS_PASSWORD'
+            )
+        ]) {
             configFileProvider([
                 configFile(
-                    fileId: 'maven-settings',
+                    fileId: 'd7c31b3c-828f-4e23-a2ee-cae8bb049db0',
                     variable: 'MAVEN_SETTINGS'
                 )
             ]) {
                 sh '''
-                    mvn deploy \
-                    -DskipTests=true \
+                    mvn deploy -DskipTests=true \
                     -s "$MAVEN_SETTINGS"
                 '''
             }
         }
     }
 }
-
         stage('build and Tag docker image') {
             steps {
                 script {
